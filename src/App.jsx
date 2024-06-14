@@ -1,35 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import ProductList from "./components/ProductList";
+import ProductForm from "./components/ProductForm";
+import { useEffect, useState } from "react";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+const App = () => {
+  const [products, setProducts] = useState([]);
+  const [isFirstRender, setIsFirstRender] = useState(true);
+  const addProduct = (product) => {
+    setProducts((prevList) => [...prevList, product]);
+  };
+  useEffect(() => {
+    // On vérifie si une liste de produits est enregistrée dans le localStorage
+    const savedProducts = localStorage.getItem("listOfProducts");
+    if (savedProducts) {
+      // Si c'est bien le cas on met à jour la liste de produits
+      setProducts(JSON.parse(savedProducts));
+    }
+    // Dans tous les cas on indique que le premier render est passé
+    setIsFirstRender(false);
+  }, []);
+  useEffect(() => {
+    if (!isFirstRender) {
+      localStorage.setItem("listOfProducts", JSON.stringify(products));
+    }
+  }, [products]);
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
+    <main className="product-page">
+      <h1 className="product-page__title">Produits</h1>
+      <ProductForm addProduct={addProduct} />
+      {products.length > 0 && <ProductList products={products} />}
+    </main>
+  );
+};
 
-export default App
+export default App;
