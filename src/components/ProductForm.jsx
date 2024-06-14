@@ -1,21 +1,36 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { v4 as uuid } from "uuid";
 import "./productForm.css";
-const ProductForm = ({ addProduct }) => {
+const ProductForm = ({ dispatch }) => {
   const emptyFormData = {
     name: "",
     description: "",
-    price: 0,
+    price: "",
   };
   const [formData, setFormData] = useState({ emptyFormData });
+  const nameRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const priceRef = useRef(null);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
   };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.name && formData.price) {
-      addProduct({ ...formData });
+      dispatch({
+        type: "add_product",
+        newProduct: { ...formData, id: uuid() },
+      });
+      resetForm();
     }
+  };
+  // J'ai essayé de reset les fields avec une ref mais ça ne render pas et le champ garde la valeur du state, du coup je reset par le state mais j'utilise la ref pour le focus sur name
+  const resetForm = () => {
+    setFormData({ ...emptyFormData });
+    nameRef.current.focus();
   };
   return (
     <form className="product-form" onSubmit={handleSubmit}>
@@ -25,6 +40,7 @@ const ProductForm = ({ addProduct }) => {
           {" "}
           Le nom du produit:
           <input
+            ref={nameRef}
             className="product-form__field-input"
             type="text"
             name="name"
@@ -36,6 +52,7 @@ const ProductForm = ({ addProduct }) => {
           {" "}
           La description du produit:
           <textarea
+            ref={descriptionRef}
             className="product-form__field-input"
             name="description"
             value={formData.description}
@@ -45,6 +62,7 @@ const ProductForm = ({ addProduct }) => {
         <label htmlFor="price" className="product-form__field">
           Le prix du produit:
           <input
+            ref={priceRef}
             className="product-form__field-input"
             type="number"
             name="price"

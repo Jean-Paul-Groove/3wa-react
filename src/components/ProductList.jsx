@@ -5,8 +5,8 @@ const ProductList = ({ products }) => {
     <div className="product-list">
       <h2 className="product-list__title">Nos produits disponibles: </h2>
       <div className="product-list__grid">
-        {products?.map((product, index) => (
-          <Product key={index} {...product} />
+        {products?.map((product) => (
+          <Product key={product.id} {...product} />
         ))}
       </div>
     </div>
