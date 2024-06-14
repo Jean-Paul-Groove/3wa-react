@@ -1,13 +1,24 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { v4 as uuid } from "uuid";
 import "./productForm.css";
-const ProductForm = ({ dispatch }) => {
+const ProductForm = ({
+  dispatch,
+  typeOfForm = "new",
+  previousProduct,
+  closeForm,
+}) => {
   const emptyFormData = {
     name: "",
     description: "",
     price: "",
+    id: "",
   };
   const [formData, setFormData] = useState({ emptyFormData });
+  useEffect(() => {
+    if (typeOfForm === "edit" && previousProduct) {
+      setFormData({ ...previousProduct });
+    }
+  }, []);
   const nameRef = useRef(null);
   const descriptionRef = useRef(null);
   const priceRef = useRef(null);
@@ -19,22 +30,39 @@ const ProductForm = ({ dispatch }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     if (formData.name && formData.price) {
-      dispatch({
-        type: "add_product",
-        newProduct: { ...formData, id: uuid() },
-      });
-      resetForm();
+      if (typeOfForm === "new") {
+        dispatch({
+          type: "add_product",
+          newProduct: { ...formData, id: uuid() },
+        });
+
+        resetForm();
+      }
+
+      if (typeOfForm === "edit") {
+        dispatch({
+          type: "update_product",
+          updatedProduct: { ...formData },
+        });
+        closeForm();
+      }
     }
   };
   // J'ai essayé de reset les fields avec une ref mais ça ne render pas et le champ garde la valeur du state, du coup je reset par le state mais j'utilise la ref pour le focus sur name
   const resetForm = () => {
     setFormData({ ...emptyFormData });
     nameRef.current.focus();
+    if (closeForm) {
+      closeForm();
+    }
   };
   return (
     <form className="product-form" onSubmit={handleSubmit}>
-      <h2 className="product-form__title">Nouveau produit </h2>
+      <h2 className="product-form__title">
+        {typeOfForm === "edit" ? "Modifications" : "Nouveau produit"}{" "}
+      </h2>
       <div className="product-form__fields-container">
         <label className="product-form__field" htmlFor="name">
           {" "}
@@ -68,10 +96,15 @@ const ProductForm = ({ dispatch }) => {
             name="price"
             value={formData.price}
             onChange={handleChange}
+            step={0.01}
           />
         </label>
       </div>
-      <button className="product-form__button">Ajouter le produit ! </button>
+      <button className="product-form__button">
+        {typeOfForm === "edit"
+          ? "Modifier le produit !"
+          : "Ajouter le produit !"}
+      </button>
     </form>
   );
 };

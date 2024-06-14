@@ -24,27 +24,35 @@ const App = () => {
   const [products, dispatch] = useReducer(productsReducer, []);
   const [isFirstRender, setIsFirstRender] = useState(true);
   useEffect(() => {
-    // On vérifie si une liste de produits est enregistrée dans le localStorage
-    const savedProducts = localStorage.getItem("listOfProducts");
-
-    if (savedProducts) {
-      // Si c'est bien le cas on met à jour la liste de produits
-      dispatch({ type: "set_complete_list", list: JSON.parse(savedProducts) });
+    try {
+      // On vérifie si une liste de produits est enregistrée dans le localStorage
+      const storedList = localStorage.getItem("listOfProducts");
+      const savedProducts = JSON.parse(storedList);
+      if (savedProducts) {
+        // Si c'est bien le cas on met à jour la liste de produits
+        dispatch({
+          type: "set_complete_list",
+          list: JSON.parse(savedProducts),
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      // Dans tous les cas on indique que le premier render est passé
+      setIsFirstRender(false);
     }
-
-    // Dans tous les cas on indique que le premier render est passé
-    setIsFirstRender(false);
   }, []);
   useEffect(() => {
-    if (!isFirstRender) {
+    if (!isFirstRender && products.length > 0) {
       localStorage.setItem("listOfProducts", JSON.stringify(products));
     }
   }, [products]);
   return (
     <main className="product-page">
-      <h1 className="product-page__title">Produits</h1>
+      <h1 className="product-page__title">Super shop 2000</h1>
       <ProductForm dispatch={dispatch} />
-      {products.length > 0 && <ProductList products={products} />}
+
+      <ProductList products={products} dispatch={dispatch} />
     </main>
   );
 };
